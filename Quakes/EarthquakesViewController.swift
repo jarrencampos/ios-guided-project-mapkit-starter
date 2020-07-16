@@ -79,6 +79,14 @@ extension EarthquakesViewController: MKMapViewDelegate {
         
         annotationView.glyphImage = #imageLiteral(resourceName: "QuakeIcon")
         
+        switch quake.magnitude {
+            case -10..<3: annotationView.markerTintColor = .systemYellow
+            case 3..<5: annotationView.markerTintColor = .systemOrange
+            case 5..<7: annotationView.markerTintColor = .systemRed
+            default: annotationView.markerTintColor = .systemPurple
+            
+        }
+        
         annotationView.canShowCallout = true
         let detailView = QuakeDetailView()
         detailView.quake = quake
