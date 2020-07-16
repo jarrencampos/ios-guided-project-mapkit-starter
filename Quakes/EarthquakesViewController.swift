@@ -17,6 +17,19 @@ class EarthquakesViewController: UIViewController {
     private var userTrackingButton: MKUserTrackingButton!
     
     private let locationManager = CLLocationManager()
+    
+    var quakes: [Quake] = [] {
+        didSet {
+            let oldQuakes = Set(oldValue)
+            let newQuakes = Set(quakes)
+            
+            let addedQuakes = Array(newQuakes.subtracting(oldQuakes))
+            let removedQuakes = Array(oldQuakes.subtracting(newQuakes))
+            
+            mapView.removeAnnotations(removedQuakes)
+            mapView.addAnnotations(addedQuakes)            
+        }
+    }
 	
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,9 +53,9 @@ class EarthquakesViewController: UIViewController {
             if let error = error {
                 NSLog("%@", "Error fetching quakes: \(error)")
             }
-            print(quakes)
-        }
+            self.quakes = quakes ?? []
     }
+}
 }
 
 extension EarthquakesViewController: MKMapViewDelegate {
@@ -52,3 +65,4 @@ extension EarthquakesViewController: MKMapViewDelegate {
     }
     
 }
+

@@ -7,24 +7,27 @@
 //
 
 import Foundation
+import MapKit
 
 struct QuakeResults: Decodable {
     let features: [Quake]
 }
 
-class Quake: Decodable {
+class Quake: NSObject, Decodable {
     
     let magnitude: Double
     let place: String
     let time: Date
     let latitude: Double
     let longitude: Double
+    let identifier: String
     
     enum QuakeCodingKeys: String, CodingKey {
         case properties
         case mag
         case place
         case time
+        case id
         case geometry
         case coordinates
     }
@@ -35,17 +38,48 @@ class Quake: Decodable {
         self.magnitude = try properties.decode(Double.self, forKey: .mag)
         self.place = try properties.decode(String.self, forKey: .place)
         self.time = try properties.decode(Date.self, forKey: .time)
+        self.identifier = try properties.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
         let geometry = try container.nestedContainer(keyedBy: QuakeCodingKeys.self, forKey: .geometry)
         var coordinates = try geometry.nestedUnkeyedContainer(forKey: .coordinates)
         self.longitude = try coordinates.decode(Double.self)
         self.latitude = try coordinates.decode(Double.self)
     }
     
-    internal init(magnitude: Double, place: String, time: Date, latitude: Double, longitude: Double) {
+    static func == (lhs: Quake, rhs: Quake) {
+        lhs.identifier == rhs.identifier
+    }
+    
+    override func isEqual(_ object: Any?) -> Bool {
+        guard let object = object as? Quake else { return false }
+        
+        return self.identifier == object.identifier
+    }
+    
+    override var hash: Int {
+        identifier .hashValue
+    }
+    
+    internal init(magnitude: Double, place: String, time: Date, identifier: String, latitude: Double, longitude: Double) {
         self.magnitude = magnitude
         self.place = place
         self.time = time
+        self.identifier = identifier
         self.latitude = latitude
         self.longitude = longitude
     }
+}
+
+extension Quake: MKAnnotation {
+    var coordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    }
+    
+    var title: String?{
+        place
+    }
+    
+    var subtitle: String? {
+        "Magniture: \(magnitude)"
+    }
+    
 }
