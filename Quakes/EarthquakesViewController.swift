@@ -59,7 +59,18 @@ class EarthquakesViewController: UIViewController {
             if let error = error {
                 NSLog("%@", "Error fetching quakes: \(error)")
             }
-            self.quakes = quakes ?? []
+            guard let quakes = quakes else {
+                self.quakes = []
+                return
+            }
+            
+            let sortedQuakes = quakes.sorted { (a, b) -> Bool in
+                a.magnitude > b.magnitude
+            }
+            
+            self.quakes = Array(sortedQuakes.prefix(100))
+            
+//            self.quakes = quakes ?? []
     }
 }
 }
